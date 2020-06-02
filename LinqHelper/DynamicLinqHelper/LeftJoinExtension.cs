@@ -9,35 +9,35 @@ namespace Mael.DynamicLinqHelper
     public static class LeftJoinExtension
     {
         /// <summary>
-        /// 
+        /// Correlates the elements of two sequences based on equality of keys. 
+        /// Left part will be always return.
         /// </summary>
-        /// <param name="query"></param>
-        /// <param name="innerObject"></param>
-        /// <param name="outerKey"></param>
-        /// <param name="innerKey"></param>
-        /// <param name="outerSelectedProperties"></param>
-        /// <param name="innerSelectedProperties"></param>
-        /// <returns></returns>
+        /// <param name="inner">The sequence to join.</param>
+        /// <param name="leftKey">A dynamic function to extract the join key from each element of the first sequence.</param>
+        /// <param name="innerKey">A dynamic function to extract the join key from each element of the second sequence.</param>
+        /// <param name="leftSelectedProperties">List of properties to return from the first sequence.</param>
+        /// <param name="innerSelectedProperties">List of properties to return from the second sequence.</param>
+        /// <returns>An System.Linq.IQueryable obtained by performing a left join on two sequences.</returns>
         public static IQueryable LeftJoin(this IQueryable query,
-                                          IQueryable innerObject,
-                                          string outerKey,
+                                          IQueryable inner,
+                                          string leftKey,
                                           string innerKey,
-                                          List<string> outerSelectedProperties,
+                                          List<string> leftSelectedProperties,
                                           List<string> innerSelectedProperties)
         {
-            if (outerSelectedProperties is null)
+            if (leftSelectedProperties is null)
                 throw new ArgumentNullException("outerSelectedProperties cannot be null");
 
             if (innerSelectedProperties is null)
                 throw new ArgumentNullException("innerSelectedProperties cannot be null");
 
             query = query.GroupJoin(ParsingConfig.DefaultEFCore21,
-                                    innerObject,
-                                    outerKey,
+                                    inner,
+                                    leftKey,
                                     innerKey,
                                     GroupJoinSelector);
 
-            string selectedProperties = GenerateSelectedPropertiesString(outerSelectedProperties,
+            string selectedProperties = GenerateSelectedPropertiesString(leftSelectedProperties,
                                                                          innerSelectedProperties);
 
             query = query.SelectMany(SelectManyCollectionSelector,
@@ -49,11 +49,11 @@ namespace Mael.DynamicLinqHelper
         }
 
         /// <summary>
-        /// 
+        /// Turn the two property sequences into a string formatted for select many
         /// </summary>
-        /// <param name="outerSelectedProperties"></param>
-        /// <param name="innerSelectedProperties"></param>
-        /// <returns></returns>
+        /// <param name="outerSelectedProperties">List of properties to return from the first sequence.</param>
+        /// <param name="innerSelectedProperties">List of properties to return from the second sequence.</param>
+        /// <returns>String formatted for select many</returns>
         private static string GenerateSelectedPropertiesString(List<string> outerSelectedProperties,
                                                                List<string> innerSelectedProperties)
         {
@@ -72,46 +72,18 @@ namespace Mael.DynamicLinqHelper
         }
 
 
-        /// <summary>
-        /// Determina il nome da assegnare all'aggregato principale (tabella principale)
-        /// </summary>
         private static string SelectManyOuter { get => "source"; }
-
-        /// <summary>
-        /// Determina il nome da assegnare alle proprietà della join (tabella secondaria)
-        /// </summary>
         private static string SelectManyInner { get => "detail"; }
 
 
-        /// <summary>
-        /// Determina il prefisso per le select delle join (tabella principale)
-        /// </summary>
         private static string SelectManyOuterSelection { get => $"{SelectManyOuter}.{GroupJoinInnerPrefix}"; }
-
-        /// <summary>
-        /// Determina il prefisso per le select delle join (tabella secondaria)
-        /// </summary>
         private static string SelectManyInnerSelection { get => SelectManyInner; }
 
 
-        /// <summary>
-        /// Determina il prefisso per le select delle join (tabella principale)
-        /// </summary>
         private static string GroupJoinInnerPrefix { get => "A"; }
-
-        /// <summary>
-        /// Determina il prefisso per le select delle join (tabella secondaria)
-        /// </summary>
         private static string GroupJoinOuterPrefix { get => "B"; }
 
-        /// <summary>
-        /// Selector per la groupjoin
-        /// </summary>
         private static string GroupJoinSelector { get => $"new (outer AS {GroupJoinInnerPrefix}, inner AS {GroupJoinOuterPrefix})"; }
-
-        /// <summary>
-        /// Selector per la parte di join
-        /// </summary>
         private static string SelectManyCollectionSelector { get => $"{GroupJoinOuterPrefix}.DefaultIfEmpty()"; }
     }
 }
