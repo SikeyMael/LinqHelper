@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -16,7 +16,7 @@ Extensions to easily perform left joins on IQueryable objects.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.1.2" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.3.0" />
   </ItemGroup>
 
 </Project>
